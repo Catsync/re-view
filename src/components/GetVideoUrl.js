@@ -15,7 +15,7 @@ const GetVideoUrl = ({ onSubmit }) => {
 
   const doSubmit = () => {
     const canPlay = ReactPlayer.canPlay(url)
-    console.log('canPlay', canPlay)
+
     if (canPlay) {
       onSubmit(url)
     } else {

@@ -32,7 +32,7 @@ const ReView = ({ videoUrl }) => {
   const bookmarks = _.sortBy(Object.values(state.context.bookmarks), ['time'])
   const lastBookmark = _.findLast(bookmarks, (b) => playedSeconds >= b.time)
   const lastBookmarkIndex = bookmarks.indexOf(lastBookmark)
-  console.log('ReView')
+
   React.useEffect(() => {
     if (service.initialized === true) {
       send({
