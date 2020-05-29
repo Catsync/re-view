@@ -1,0 +1,62 @@
+{
+  "name": "@catsync/re-view",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "main": "dist/components/index.js",
+  "module": "dist/components/ReView.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "babel": {
+    "presets": [
+      "@babel/react"
+    ]
+  },
+  "dependencies": {
+    "@reach/router": "^1.3.3",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "@xstate/react": "^0.8.1",
+    "immer": "^6.0.8",
+    "lodash": "^4.17.15",
+    "query-string": "^6.12.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-player": "^2.0.1",
+    "react-scripts": "3.4.1",
+    "react-use": "^15.1.0",
+    "react-virtual": "^2.2.0",
+    "theme-ui": "^0.3.1",
+    "xstate": "^4.10.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "publish:npm": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src --out-dir dist --copy-files"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.1",
+    "prettier": "^2.0.5"
+  }
+}
