@@ -1,5 +1,6 @@
 {
   "name": "@catsync/re-view",
+  "description": "A tool for bookmarking and looping video.",
   "version": "0.1.0",
   "private": false,
   "license": "MIT",
@@ -7,7 +8,7 @@
   "module": "dist/components/ReView.js",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Catsync/re-view"
   },
   "babel": {
     "presets": [
