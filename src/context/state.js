@@ -106,6 +106,9 @@ const appState = Machine(
             target: 'playing',
             actions: 'seekTo',
           },
+          START_EDIT: {
+            target: 'editing',
+          },
         },
       },
       paused: {
@@ -150,7 +153,7 @@ const appState = Machine(
             actions: 'updateBookmark',
           },
           DELETE_BOOKMARK: {
-            target: 'editing',
+            target: 'paused',
             actions: 'deleteBookmark',
           },
         },

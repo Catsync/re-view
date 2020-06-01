@@ -1,5 +1,5 @@
 /** @jsx jsx  */
-// import React from 'react'
+import React from 'react'
 import { jsx } from 'theme-ui'
 import { Machine, assign } from 'xstate'
 import { useMachine } from '@xstate/react'
@@ -46,6 +46,7 @@ const VideoBookmark = ({
   onUpdateBookmark,
   onDeleteBookmark,
 }) => {
+  const inputRef = React.useRef()
   const { send: appSend } = useAppActions()
   const [state, send] = useMachine(editingMachine, {
     context: {
@@ -68,7 +69,6 @@ const VideoBookmark = ({
       },
     },
   })
-  // console.log('bookmark', bookmark.title, state.value, state.context)
   const { time, title } = state.context.bookmark
   const isEditing = state.matches('editing')
   const { size, start } = rowProps
@@ -79,6 +79,13 @@ const VideoBookmark = ({
   const style = isCurrent
     ? { ...styles.bookmark, ...styles.hilight, ...virtualStyle }
     : { ...styles.bookmark, ...virtualStyle }
+
+  React.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditing])
 
   const toggleEditing = (e) => {
     e.preventDefault()
@@ -95,6 +102,14 @@ const VideoBookmark = ({
   const handleDeleteBokmark = (e) => {
     e.stopPropagation()
     onDeleteBookmark(bookmark)
+  }
+
+  // This has to be done on keyUp to avoid the global useKey
+  // handler from getting the keyDown after we're out of editing state
+  const handleEnter = (e) => {
+    if (e.key === 'Enter') {
+      toggleEditing(e)
+    }
   }
 
   const doSeek = (time) => {
@@ -115,7 +130,12 @@ const VideoBookmark = ({
       <div>
         {time.toFixed(1)}s:{' '}
         {isEditing ? (
-          <input value={title} onChange={handleUpdateTitle} />
+          <input
+            ref={inputRef}
+            value={title}
+            onChange={handleUpdateTitle}
+            onKeyUp={handleEnter}
+          />
         ) : (
           title
         )}
