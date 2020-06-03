@@ -137,7 +137,7 @@ const appState = Machine(
           },
           SEEK: {
             target: 'paused',
-            actions: 'seekTo',
+            actions: ['seekTo', 'updatePlayedSeconds'],
           },
         },
       },
@@ -198,6 +198,9 @@ const appState = Machine(
         played: (c, e) => e.payload.played,
         loadedSeconds: (c, e) => e.payload.loadedSeconds,
         loaded: (c, e) => e.payload.loaded,
+      }),
+      updatePlayedSeconds: assign({
+        playedSeconds: (c, e) => e.time,
       }),
       createBookmark: assign({
         bookmarks: (context, event) =>
