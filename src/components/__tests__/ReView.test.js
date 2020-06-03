@@ -9,6 +9,13 @@ import {
 import ReView from '../ReView'
 import { getBookmarks, saveBookmarks } from '../../api/bookmarks'
 import ReactPlayer from 'react-player'
+import {
+  MOCK_DURATION,
+  buildBookmarks,
+  buildContext,
+} from '../../utils/mock-generators'
+
+const MOCK_URL = 'http://shenans.co'
 
 jest.mock('../../api/bookmarks')
 jest.mock('react-player')
@@ -23,15 +30,24 @@ jest.mock('react-player', () => {
       onProgress,
       ...rest
     } = props
-    // This triggers a warning. Not sure why.
-    // React.useImperativeHandle(ref, () => ({
-    //   testProgress: data => onProgress(data)
-    // }))
+
+    React.useImperativeHandle(ref, () => ({
+      testProgress: (data) => onProgress(data),
+      seekTo: (time, type) => {
+        onProgress({
+          playedSeconds: time,
+          loadedSeconds: time * 1.1,
+          played: time / MOCK_DURATION,
+          loaded: (time * 1.1) / MOCK_DURATION,
+        })
+      },
+    }))
 
     // This might be sketchy :p
     const fireOnProgress = (e) => {
       const value = parseFloat(e.target.value)
-      onProgress({ playedSeconds: value, loadedSeconds: value * 1.1 })
+      ref.current.seekTo(value, 'seconds')
+      // onProgress({ playedSeconds: value, loadedSeconds: value * 1.1 })
     }
 
     return (
@@ -76,7 +92,7 @@ test('Can click to play and pause', async () => {
   expect(scroller.scrollTop).toBe(0)
   fireEvent.click(playButton)
 
-  // Firsts goes into loading state
+  // First goes into loading state
   within(player).getByText('player.playing: true')
   view.getByText('...')
   expect(scroller.scrollTop).toBe(0)
@@ -149,24 +165,14 @@ test('Displays bookmarks', () => {
   view.getByText(/another bookmark/i)
 })
 
-test('Create a bookmark by pressing Enter', () => {
-  const bookmarks = {
-    '0': {
-      time: 0,
-      title: 'Start',
-    },
-    '1.4359239732971192': {
-      time: 1.4359239732971192,
-      title: 'Another bookmark',
-    },
-  }
-  const videoUrl = 'http://shenans.co'
+test('Create a bookmark by pressing Enter', async () => {
+  const bookmarks = buildBookmarks()
+  const context = buildContext({ bookmarks })
   getBookmarks.mockReturnValue(bookmarks)
 
-  const view = renderWithProviders(<ReView videoUrl={videoUrl} />)
+  const view = renderWithProviders(<ReView videoUrl={MOCK_URL} />, { context })
 
   view.getByText(/^0.0s: Start/)
-  view.getByText(/another bookmark/i)
   view.getByText(/^Time: 0.0s/)
   expect(saveBookmarks).not.toHaveBeenCalled()
 
@@ -174,74 +180,59 @@ test('Create a bookmark by pressing Enter', () => {
   const playButton = view.getByText('Play')
   fireEvent.click(playButton)
   fireEvent.click(progress, { target: { value: 1.1 } })
-
   view.getByText(/^Time: 1.1s/)
   fireEvent.keyDown(document, { code: 'Enter' })
   view.getByText('1.1s: Bookmark at 1.1')
   expect(saveBookmarks).toHaveBeenCalledTimes(1)
-  expect(saveBookmarks.mock.calls[0][0]).toEqual(videoUrl)
-  expect(saveBookmarks.mock.calls[0][1]).toMatchInlineSnapshot(`
+  expect(saveBookmarks.mock.calls[0][0]).toEqual(MOCK_URL)
+  expect(saveBookmarks.mock.calls[0][1][1.1]).toMatchInlineSnapshot(`
     Object {
-      "0": Object {
-        "time": 0,
-        "title": "Start",
-      },
-      "1.1": Object {
-        "time": 1.1,
-        "title": "Bookmark at 1.1",
-      },
-      "1.4359239732971192": Object {
-        "time": 1.4359239732971192,
-        "title": "Another bookmark",
-      },
+      "time": 1.1,
+      "title": "Bookmark at 1.1",
     }
   `)
+  await wait()
 })
 
-test('can set the start and end of the loop', () => {
-  const bookmarks = {
-    '0': {
-      time: 0,
-      title: 'Bookmark 1',
-    },
-    '2': {
-      time: 2,
-      title: 'Bookmark 2',
-    },
-    '3': {
-      time: 3,
-      title: 'Bookmark 3',
-    },
-  }
+test('can set the start and end of the loop', async () => {
+  const bookmarks = buildBookmarks([
+    { time: 1, title: 'Bookmark 1' },
+    { time: 2, title: 'Bookmark 2' },
+    { time: 3, title: 'Bookmark 3' },
+  ])
   getBookmarks.mockReturnValue(bookmarks)
-  const context = {
-    bookmarks,
-    loop: { start: 0, end: 3 },
-  }
-  const view = renderWithProviders(<ReView />, { context })
+  const context = buildContext({ bookmarks, loop: { start: 0, end: 3 } })
+
+  const view = renderWithProviders(<ReView videoUrl={MOCK_URL} />, { context })
+  const mockProgress = view.getByText('updatePlayedSeconds')
+
   const startButtons = view.getAllByText('Start')
   const endButtons = view.getAllByText('End')
-  within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 1/)
-  within(view.getByTestId(/bookmark.*start/)).getByText(/Bookmark 1/)
+  within(view.getByTestId(/bookmark.*current/)).getByText(`0.0s: Start`)
+  within(view.getByTestId(/bookmark.*start/)).getByText(`0.0s: Start`)
   within(view.getByTestId(/bookmark.*end/)).getByText(/Bookmark 3/)
 
   // Change start to bookmark 2
-  fireEvent.click(startButtons[1])
-  within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 1/)
+  fireEvent.click(view.getByText('Play'))
+  fireEvent.click(mockProgress, { target: { value: 1 } })
+
+  fireEvent.click(startButtons[2])
+  within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 2/)
   within(view.getByTestId(/bookmark.*start/)).getByText(/Bookmark 2/)
   within(view.getByTestId(/bookmark.*end/)).getByText(/Bookmark 3/)
 
   // Change end to bookmark 1, also causing start to change
-  fireEvent.click(endButtons[0])
+  fireEvent.click(endButtons[1])
   within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 1/)
   within(view.getByTestId(/bookmark.*start/)).getByText(/Bookmark 1/)
   within(view.getByTestId(/bookmark.*end/)).getByText(/Bookmark 1/)
 
   // Change start to bookmark 3, also causing end to change
-  fireEvent.click(startButtons[2])
-  within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 1/)
+  fireEvent.click(startButtons[3])
+  within(view.getByTestId(/bookmark.*current/)).getByText(/Bookmark 3/)
   within(view.getByTestId(/bookmark.*start/)).getByText(/Bookmark 3/)
   within(view.getByTestId(/bookmark.*end/)).getByText(/Bookmark 3/)
+  await wait()
 })
 
 test('can set the playback rate', () => {
@@ -312,6 +303,33 @@ test('can delete a bookmark', () => {
       },
     }
   `)
+})
+
+test('Can nudge a bookmark up or down with arrow keys', async () => {
+  const bookmark = { time: 1, title: 'First Bookmark' }
+  const duration = 60
+  const data = buildBookmarks([bookmark], { duration })
+
+  getBookmarks.mockReturnValue(data)
+  const context = {
+    bookmarks: data,
+    duration,
+    loop: { start: 0, end: duration },
+  }
+  const view = renderWithProviders(<ReView videoUrl={MOCK_URL} />, { context })
+
+  // First need to seek to this bookmark.
+  // Then pause the playback before we can do the nudge.
+  const seek = view.getByText(`1.0s: ${bookmark.title}`)
+  fireEvent.click(seek)
+  fireEvent.click(view.getByText('Pause'))
+
+  fireEvent.keyDown(document, { code: 'ArrowDown' })
+  view.getByText(`1.1s: ${bookmark.title}`)
+
+  fireEvent.keyDown(document, { code: 'ArrowUp' })
+  view.getByText(`1.0s: ${bookmark.title}`)
+  await wait()
 })
 
 test.todo('click bookmark to seek video')

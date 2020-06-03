@@ -11,6 +11,7 @@ const noop = () => {}
 
 export const DEFAULT_CONTEXT = {
   videoUrl: undefined,
+  duration: undefined,
   playedSeconds: 0,
   playbackRate: 1,
   played: 0,
@@ -139,6 +140,10 @@ const appState = Machine(
             target: 'paused',
             actions: ['seekTo', 'updatePlayedSeconds'],
           },
+          MOVE_BOOKMARK: {
+            target: 'paused',
+            actions: ['moveBookmark'],
+          },
         },
       },
       editing: {
@@ -176,6 +181,19 @@ const appState = Machine(
         bookmarks: (c, e) =>
           produce(c.bookmarks, (draft) => {
             delete draft[e.bookmark.time]
+          }),
+      }),
+      moveBookmark: assign({
+        playedSeconds: (c, e) => e.toTime,
+        bookmarks: (c, e) =>
+          produce(c.bookmarks, (draft) => {
+            const { fromTime, toTime } = e
+            const newBookmark = {
+              ...draft[fromTime],
+              time: toTime,
+            }
+            draft[toTime] = newBookmark
+            delete draft[fromTime]
           }),
       }),
       persistBookmarks: (c, e) => {

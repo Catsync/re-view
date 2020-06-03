@@ -27,6 +27,7 @@ const ReView = ({ videoUrl }) => {
   const { send } = useAppActions()
   const { playedSeconds, played, loaded, loop, playbackRate } = state.context
   const isPlaying = state.matches('playing')
+  const isPaused = state.matches('paused')
   const isLoading = state.matches('loading')
   const editing = state.matches('editing')
   const bookmarks = _.sortBy(Object.values(state.context.bookmarks), ['time'])
@@ -47,7 +48,7 @@ const ReView = ({ videoUrl }) => {
     size: bookmarks.length,
     parentRef: scrollParentRef,
     estimateSize: React.useCallback(() => 57, []),
-    overscan: 2,
+    overscan: 5,
   })
 
   const togglePlaying = React.useCallback(
@@ -64,8 +65,43 @@ const ReView = ({ videoUrl }) => {
     [send]
   )
 
+  const nudgeBookmarkUp = React.useCallback(
+    (e) => {
+      if (
+        isPaused &&
+        lastBookmark &&
+        lastBookmark.time > 0 &&
+        lastBookmark.time !== state.context.duration
+      ) {
+        const fromTime = lastBookmark.time
+        const toTime = fromTime - 0.1
+        send({ type: 'MOVE_BOOKMARK', fromTime, toTime })
+        send({ type: 'SEEK', time: toTime })
+      }
+    },
+    [isPaused, lastBookmark, send, state.context.duration]
+  )
+  const nudgeBookmarkDown = React.useCallback(
+    (e) => {
+      if (
+        isPaused &&
+        lastBookmark &&
+        lastBookmark.time < state.context.duration &&
+        lastBookmark.time !== 0
+      ) {
+        const fromTime = lastBookmark.time
+        const toTime = fromTime + 0.1
+        send({ type: 'MOVE_BOOKMARK', fromTime, toTime })
+        send({ type: 'SEEK', time: toTime })
+      }
+    },
+    [isPaused, lastBookmark, send, state.context.duration]
+  )
+
   useKey('Space', togglePlaying, { capture: !editing })
   useKey('Enter', createBookmark, { capture: !editing })
+  useKey('ArrowUp', nudgeBookmarkUp)
+  useKey('ArrowDown', nudgeBookmarkDown)
 
   React.useEffect(() => {
     if (!playerRef.current) {
