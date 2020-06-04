@@ -195,8 +195,13 @@ const ReView = ({ videoUrl }) => {
             <br />
             Enter to create a bookmark at the current timestamp of the video.
             <br />
-            Click a bookmark to jump to that timestamp. Use the Start/End
-            buttons on the bookmarks to control how the video loops.
+            Click a bookmark to jump to that timestamp.
+            <br />
+            Use the Start/End buttons on the bookmarks to control how the video
+            loops.
+            <br />
+            Use Up/Down arrow keys to slightly adjust time of current bookmark
+            while paused.
           </div>
           <div style={styles.textContainer}>
             Think this tool is useful and would like to use it with other

@@ -39,16 +39,27 @@ const HomeScreen = ({ navigate, location }) => {
           After creating bookmarks, set the Start and End point to make the
           video loop.
         </Text>
+
         <Text sx={styles.text}>Your bookmarks are saved in your browser.</Text>
         <Text sx={styles.text}>
           If you find this tool useful, or have suggestions on how to make it
-          better, let me know at hello@shenans.co.
+          better, let me know at cat@shenans.co.
         </Text>
 
         <Text sx={styles.text}>
           Copy the url to a video into the input below.
         </Text>
         <GetVideoUrl onSubmit={setUrl} />
+        <Text sx={styles.text}>
+          <a
+            href="https://taiji-drills.shenans.co/video?url=https%3A%2F%2Fyoutu.be%2FESmo4-vKPsg"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Here's an example
+          </a>{' '}
+          using this app to learn Tai Chi.
+        </Text>
       </Box>
     </Box>
   )
