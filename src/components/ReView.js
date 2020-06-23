@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import _ from 'lodash'
 import { jsx } from 'theme-ui'
 import React from 'react'
@@ -21,7 +22,7 @@ const config = {
   },
 }
 
-const ReView = ({ videoUrl }) => {
+const ReView = ({ videoUrl, data, onShare, shareLink, clearShare }) => {
   const scrollParentRef = React.useRef()
   const { state, service, playerRef } = useAppState()
   const { send } = useAppActions()
@@ -38,11 +39,11 @@ const ReView = ({ videoUrl }) => {
     if (service.initialized === true) {
       send({
         type: 'INITIALIZE_BOOKMARKS',
-        bookmarks: getBookmarks(videoUrl),
+        bookmarks: getBookmarks(videoUrl, data),
         videoUrl,
       })
     }
-  }, [send, service.initialized, videoUrl])
+  }, [data, send, service.initialized, videoUrl])
 
   const rowVirtualizer = useVirtual({
     size: bookmarks.length,
@@ -61,8 +62,9 @@ const ReView = ({ videoUrl }) => {
   const createBookmark = React.useCallback(
     (e) => {
       send({ type: 'CREATE_BOOKMARK' })
+      clearShare()
     },
-    [send]
+    [clearShare, send]
   )
 
   const nudgeBookmarkUp = React.useCallback(
@@ -148,6 +150,11 @@ const ReView = ({ videoUrl }) => {
     send({ type: 'DELETE_BOOKMARK', bookmark })
   }
 
+  const createShare = () => {
+    const encodedBookmarks = btoa(JSON.stringify(state.context.bookmarks))
+    onShare(encodedBookmarks)
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.playerColumn}>
@@ -169,9 +176,12 @@ const ReView = ({ videoUrl }) => {
         <div sx={styles.controlsContainer}>
           <Progress max={1} playedValue={played} loadedValue={loaded} />
           <div style={styles.controls}>
-            <button onClick={togglePlaying}>
-              {isLoading ? '...' : isPlaying ? 'Pause' : 'Play'}
-            </button>
+            <div>
+              <button onClick={togglePlaying}>
+                {isLoading ? '...' : isPlaying ? 'Pause' : 'Play'}
+              </button>
+              <button onClick={createShare}>Share</button>
+            </div>
             <span>Time: {playedSeconds.toFixed(1)}s</span>
             <div>
               <label htmlFor="playbackSpeed">Speed: </label>
@@ -191,17 +201,34 @@ const ReView = ({ videoUrl }) => {
         </div>
         <div>
           <div style={{ ...styles.textContainer, marginTop: '1rem' }}>
-            Space Bar to toggle play/pause.
-            <br />
-            Enter to create a bookmark at the current timestamp of the video.
-            <br />
-            Click a bookmark to jump to that timestamp.
-            <br />
-            Use the Start/End buttons on the bookmarks to control how the video
-            loops.
-            <br />
-            Use Up/Down arrow keys to slightly adjust time of current bookmark
-            while paused.
+            {shareLink ? (
+              <div>
+                <div>
+                  Share this link if you want other people to be able to see
+                  your bookmarks for this video:
+                </div>
+                <input
+                  readOnly
+                  value={shareLink}
+                  sx={{ width: '100%', mt: '1rem' }}
+                />
+              </div>
+            ) : (
+              <>
+                Space Bar to toggle play/pause.
+                <br />
+                Enter to create a bookmark at the current timestamp of the
+                video.
+                <br />
+                Click a bookmark to jump to that timestamp.
+                <br />
+                Use the Start/End buttons on the bookmarks to control how the
+                video loops.
+                <br />
+                Use Up/Down arrow keys to slightly adjust time of current
+                bookmark while paused.
+              </>
+            )}
           </div>
           <div style={styles.textContainer}>
             Think this tool is useful and would like to use it with other

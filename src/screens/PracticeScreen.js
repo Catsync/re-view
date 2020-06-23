@@ -7,6 +7,7 @@ import GetVideoUrl from '../components/GetVideoUrl'
 const PracticeScreen = ({ navigate, location }) => {
   const params = qs.parse(location.search)
   const [url, setUrl] = React.useState('')
+  const [shareLink, setShareLink] = React.useState(null)
 
   React.useEffect(() => {
     if (url && url !== params.url) {
@@ -15,9 +16,28 @@ const PracticeScreen = ({ navigate, location }) => {
     }
   }, [navigate, params.url, url])
 
+  const generateShareLink = (data) => {
+    const shareParams = qs.stringify({
+      url: params.url,
+      data,
+    })
+    const shareUrl = `${location.origin}/${location.pathname}?${shareParams}`
+    setShareLink(shareUrl)
+  }
+
+  const clearShare = React.useCallback(() => {
+    setShareLink(null)
+  }, [])
+
   return params.url ? (
     <StateProvider>
-      <ReView videoUrl={params.url} />
+      <ReView
+        videoUrl={params.url}
+        data={params.data}
+        onShare={generateShareLink}
+        clearShare={clearShare}
+        shareLink={shareLink}
+      />
     </StateProvider>
   ) : (
     <GetVideoUrl onSubmit={setUrl} />
