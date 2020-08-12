@@ -13,6 +13,7 @@ import { getBookmarks } from '../api/bookmarks'
 
 // TODO: full screen?
 // TODO: option to speak the bookmark titles?
+const noop = () => {}
 
 const config = {
   youtube: {
@@ -22,7 +23,7 @@ const config = {
   },
 }
 
-const ReView = ({ videoUrl, data, onShare, shareLink, clearShare }) => {
+const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
   const scrollParentRef = React.useRef()
   const { state, service, playerRef } = useAppState()
   const { send } = useAppActions()
