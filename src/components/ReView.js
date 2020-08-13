@@ -25,13 +25,17 @@ const config = {
 
 const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
   const scrollParentRef = React.useRef()
-  const { state, service, playerRef } = useAppState()
+  const {
+    state,
+    service,
+    playerRef,
+    isPlaying,
+    isPaused,
+    isLoading,
+    isEditing,
+  } = useAppState()
   const { send } = useAppActions()
   const { playedSeconds, played, loaded, loop, playbackRate } = state.context
-  const isPlaying = state.matches('playing')
-  const isPaused = state.matches('paused')
-  const isLoading = state.matches('loading')
-  const editing = state.matches('editing')
   const bookmarks = _.sortBy(Object.values(state.context.bookmarks), ['time'])
   const lastBookmark = _.findLast(bookmarks, (b) => playedSeconds >= b.time)
   const lastBookmarkIndex = bookmarks.indexOf(lastBookmark)
@@ -101,8 +105,8 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
     [isPaused, lastBookmark, send, state.context.duration]
   )
 
-  useKey('Space', togglePlaying, { capture: !editing })
-  useKey('Enter', createBookmark, { capture: !editing })
+  useKey('Space', togglePlaying, { capture: !isEditing })
+  useKey('Enter', createBookmark, { capture: !isEditing })
   useKey('ArrowUp', nudgeBookmarkUp)
   useKey('ArrowDown', nudgeBookmarkDown)
 

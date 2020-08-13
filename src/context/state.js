@@ -277,10 +277,19 @@ export const StateProvider = ({ children, initialContext }) => {
       },
     },
   })
-  const value = React.useMemo(() => ({ state, service, playerRef }), [
-    service,
-    state,
-  ])
+
+  const value = React.useMemo(
+    () => ({
+      state,
+      service,
+      isPlaying: state.matches('playing'),
+      isPaused: state.matches('paused'),
+      isLoading: state.matches('loading'),
+      isEditing: state.matches('editing'),
+      playerRef,
+    }),
+    [service, state]
+  )
 
   return (
     <AppStateContext.Provider value={value}>
