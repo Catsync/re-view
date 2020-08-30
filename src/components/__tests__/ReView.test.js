@@ -20,7 +20,7 @@ const MOCK_URL = 'http://shenans.co'
 jest.mock('../../api/bookmarks')
 jest.mock('react-player')
 jest.mock('react-player', () => {
-  const React = require('React')
+  const React = require('react')
   return React.forwardRef((props, ref) => {
     const {
       progressInterval,
