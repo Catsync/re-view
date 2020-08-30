@@ -8,12 +8,19 @@ import ReactPlayer from 'react-player'
 import { useAppState, useAppActions } from '../context/state'
 import useKey from '../hooks/useKey'
 import Progress from './Progress'
+import VideoContainer from './VideoContainer'
+import VideoOverlay from './VideoOverlay'
+import OverlayText from './OverlayText'
 import VideoBookmark from './VideoBookmark'
 import { getBookmarks } from '../api/bookmarks'
 
 // TODO: full screen?
 // TODO: option to speak the bookmark titles?
 const noop = () => {}
+
+const texts = [
+  // { txt: 'Text', style: { top: '10px' } }
+]
 
 const config = {
   youtube: {
@@ -163,7 +170,7 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
   return (
     <div style={styles.container}>
       <div style={styles.playerColumn}>
-        <div data-testid="player-wrapper" style={styles.playerWrapper}>
+        <VideoContainer data-testid="player-wrapper">
           <ReactPlayer
             ref={playerRef}
             style={styles.player}
@@ -177,7 +184,14 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
             onProgress={onProgress}
             onDuration={onDuration}
           />
-        </div>
+          <VideoOverlay togglePlaying={togglePlaying}>
+            {texts.map((text, i) => (
+              <OverlayText style={text.style} key={i}>
+                {text.txt}
+              </OverlayText>
+            ))}
+          </VideoOverlay>
+        </VideoContainer>
         <div sx={styles.controlsContainer}>
           <Progress max={1} playedValue={played} loadedValue={loaded} />
           <div style={styles.controls}>
@@ -291,10 +305,6 @@ const styles = {
     flex: 3,
     marginRight: '1rem',
     maxWidth: '100vw',
-  },
-  playerWrapper: {
-    position: 'relative',
-    paddingTop: '56.25%', // Player ratio 100 / (1280 / 720)
   },
   player: {
     position: 'absolute',
