@@ -184,7 +184,7 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
             onProgress={onProgress}
             onDuration={onDuration}
           />
-          <VideoOverlay togglePlaying={togglePlaying}>
+          <VideoOverlay>
             {texts.map((text, i) => (
               <OverlayText style={text.style} key={i}>
                 {text.txt}
@@ -233,7 +233,7 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
                 />
               </div>
             ) : (
-              <>
+              <div>
                 Space Bar to toggle play/pause.
                 <br />
                 Enter to create a bookmark at the current timestamp of the
@@ -246,7 +246,7 @@ const ReView = ({ videoUrl, data, onShare, shareLink, clearShare = noop }) => {
                 <br />
                 Use Up/Down arrow keys to slightly adjust time of current
                 bookmark while paused.
-              </>
+              </div>
             )}
           </div>
           <div style={styles.textContainer}>

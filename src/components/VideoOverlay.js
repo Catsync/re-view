@@ -1,6 +1,6 @@
 import React from 'react'
 
-const VideoOverlay = ({ children, togglePlaying }) => {
+const VideoOverlay = ({ children }) => {
   return (
     <div
       style={{
